@@ -17,28 +17,32 @@
         - postgresql
         - python-pip
         
-    - name: pip install python packages
-      pip: name={{item}} state=present
-      become: yes
-      become_user: root
-      become_method: sudo
-      with_items:
-        - django
-        - djangorestframework
-        - gunicorn
-        
-    #- name: create project directory
-    #  file: path=~/project state=directory
+    - name: kill any gunicorn processes
+      shell: pkill gunicorn
+      ignore_errors: true
+    
+    - name: remove existing backup
+      command: rm -rf ~/website.bak
+      
+    - name: back-up and remove existing directory
+      command: mv ~/website ~/website.bak
+      ignore_errors: true
 
     - name: (force) clone git repo
       git: 
         repo: git@github.com:nam20485/website.git
         dest: ~/website
-        force: yes
+        #force: yes
+        
+    #- name: upgrade pip
+    #  command: pip install --upgrade pip
+        
+    - name: pip install python packages
+      pip: 
+        requirements: ~/website/requirements.txt
            
     - name: run gunicorn from config file
       gunicorn:
         app: 'website.wsgi'
         chdir: '~/website'
         conf: '~/website/gunicorn.conf'
-
