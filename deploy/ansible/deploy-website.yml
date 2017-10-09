@@ -1,0 +1,44 @@
+---
+- name: setup django+gunicorn+nginx+postgres+git development environment
+  hosts: ansible_host
+  user: ubuntu
+  
+  tasks:
+    - name: apt-get install packages
+      apt: name={{item}} state=installed
+      become: yes
+      become_user: root
+      become_method: sudo
+      with_items: 
+        - python
+        - virtualenv
+        - git
+        - nginx
+        - postgresql
+        - python-pip
+        
+    - name: pip install python packages
+      pip: name={{item}} state=present
+      become: yes
+      become_user: root
+      become_method: sudo
+      with_items:
+        - django
+        - djangorestframework
+        - gunicorn
+        
+    #- name: create project directory
+    #  file: path=~/project state=directory
+
+    - name: (force) clone git repo
+      git: 
+        repo: git@github.com:nam20485/website.git
+        dest: ~/website
+        force: yes
+           
+    - name: run gunicorn from config file
+      gunicorn:
+        app: 'website.wsgi'
+        chdir: '~/website'
+        conf: '~/website/gunicorn.conf'
+
