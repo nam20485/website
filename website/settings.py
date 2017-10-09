@@ -118,3 +118,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# import local_settings.py for any local overrides to global settings defined above
+from website.local_settings import *
