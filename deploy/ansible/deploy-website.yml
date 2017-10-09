@@ -28,7 +28,7 @@
       command: mv ~/website ~/website.bak
       ignore_errors: true
 
-    - name: (force) clone git repo
+    - name: clone git repo
       git: 
         repo: git@github.com:nam20485/website.git
         dest: ~/website
