@@ -11,10 +11,13 @@
       become_method: sudo
       with_items: 
         - python
+        - python-dev
         - virtualenv
         - git
         - nginx
         - postgresql
+        - postgresql-contrib
+        - libpq-dev 
         - python-pip
         
     - name: kill any gunicorn processes
