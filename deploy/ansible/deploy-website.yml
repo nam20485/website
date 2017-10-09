@@ -20,6 +20,10 @@
         - libpq-dev 
         - python-pip
         
+    #- name:
+    #  postgresql_db:
+    #    name: website
+        
     - name: kill any gunicorn processes
       shell: pkill gunicorn
       ignore_errors: true
@@ -43,6 +47,11 @@
     - name: pip install python packages
       pip: 
         requirements: ~/website/requirements.txt
+        
+    - name: run django db migrations
+      django_manage:
+        command: migrate
+        app_path: ~/website
            
     - name: run gunicorn from config file
       gunicorn:
