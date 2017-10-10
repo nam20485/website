@@ -1,0 +1,18 @@
+---
+- name: create AWS EC2 instance for deployment
+  hosts: ansible_host
+  user: ubuntu
+  
+  tasks:
+  
+    - name: create EC2 instance
+      ec2:
+        key_name: website_access
+        instance_type: t2.micro
+        image: ami-10547475
+        wait: yes
+        group: webserver
+        count: 3
+        vpc_subnet_id: subnet-29e63245
+        assign_public_ip: yes 
+  

@@ -74,4 +74,8 @@
       gunicorn:
         app: 'website.wsgi'
         chdir: '~/website'
-        conf: '~/website/gunicorn.conf'
+        conf: '~/website/deploy/gunicorn.conf'
+        
+    #- name: configure nginx
+    #  nginx_sites:
+         
