@@ -6,14 +6,15 @@
 
   tasks:
 
-    - name: Provision a set of instances
+    - name: create EC2 instance
       ec2:
          key_name: website_access
-         group: webserver
+         group: webserver_access_group
          instance_type: t2.micro
          image: ami-10547475
          wait: true
          count: 1
+         region: us-east-2b
          #vpc_subnet_id: subnet-29e63245
          #assign_public_ip: yes 
       register: ec2
