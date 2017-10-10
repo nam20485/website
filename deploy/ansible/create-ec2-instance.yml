@@ -13,6 +13,8 @@
         name: website_access_group
         description: access to the website servers
         region: us-east-2
+        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
+        aws_secret_key: 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
         rules:
           - proto: tcp
             from_port: 22
@@ -33,8 +35,8 @@
         wait: true
         count: 1
         region: us-east-2
-        aws_access_key: AKIAIBA3VSTXATGJOH7Q
-        aws_secret_key: 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
+        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
+        aws_secret_key: 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
       register: ec2
       
     # Add newly-created instance to hosts group
@@ -54,14 +56,23 @@
       with_items: '{{ ec2.instances }}'
       
     # Wait for SSH on remote host to become present
-    - name: wait for SSH to come up
-      wait_for:
-        host: "{{ item.public_dns_name }}"
-        port: 22
-        delay: 60
-        timeout: 320
-        state: started
-      with_items: "{{ ec2.instances }}"
+    #- name: wait for SSH to come up
+    #  wait_for:
+    #    host: "{{ item.public_dns_name }}"
+    #    port: 22
+    #    delay: 60
+    #    timeout: 180 #320
+    #    state: started
+    #  with_items: "{{ ec2.instances }}"
+    
+# Invoke host setup play 
+#- name: invoke deploy-website play
+#  hosts: ec2hosts
+#  user: ubuntu
+#  gather_facts: true
+#  tasks:
+#    - name: include deploy-website.yml
+#      include: deploy-website.yml
       
 # Test newly-created instance      
 - name: test hosts group
@@ -70,27 +81,25 @@
   gather_facts: true
   ignore_errors: true
   tasks:
-     # execute pwd shell command to test connection
+     # Execute pwd shell command to test connection
      - name: print working directory
        shell: pwd 
-       ignore_errors: true    
+       ignore_errors: true
+       key_file: /home/test/Downloads/website_access.pem   
 
 # Terminate instances
 - name: terminate instances
   hosts: localhost
   connection: local
   gather_facts: false
+  ignore_errors: true
   tasks:
-    # terminate all instances in hosts group
+    # Terminate all instances in hosts group
     - name: terminate instances in hosts group
       ec2:
         state: 'absent'
+        wait: true
         instance_ids: '{{ ec2.instance_ids }}'
         region: us-east-2
-        
-# Invoke host setup play 
-#- name: invoke deploy play
-#  hosts: ec2hosts
-#  user: ubuntu
-#  tasks:
-#    - include: deploy-website.yml
+        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
+        aws_secret_key: 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
