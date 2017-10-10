@@ -84,8 +84,7 @@
      # Execute pwd shell command to test connection
      - name: print working directory
        shell: pwd 
-       ignore_errors: true
-       key_file: /home/test/Downloads/website_access.pem   
+       ignore_errors: true  
 
 # Terminate instances
 - name: terminate instances
