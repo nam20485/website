@@ -4,6 +4,7 @@
   user: ubuntu
   
   tasks:
+  
     - name: apt-get install packages
       apt: name={{item}} state=installed
       become: yes
@@ -19,10 +20,7 @@
         - postgresql-contrib
         - libpq-dev 
         - python-pip
-        
-    #- name:
-    #  postgresql_db:
-    #    name: website
+        - python-psycopg2
         
     - name: kill any gunicorn processes
       shell: pkill gunicorn
@@ -41,12 +39,31 @@
         dest: ~/website
         #force: yes
         
-    #- name: upgrade pip
-    #  command: pip install --upgrade pip
+    - name: upgrade pip
+      command: pip install --upgrade pip
         
     - name: pip install python packages
       pip: 
         requirements: ~/website/requirements.txt
+        
+    - name: create postgres database
+      become: yes
+      become_user: postgres
+      become_method: sudo
+      postgresql_db:
+        name: website
+        state: present
+        
+    - name: create postgres user
+      become: yes
+      become_user: postgres
+      become_method: sudo
+      postgresql_user:
+        db: website
+        name: website
+        password: website
+        priv: "ALL"
+        state: present
         
     - name: run django db migrations
       django_manage:

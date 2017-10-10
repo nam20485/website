@@ -16,19 +16,19 @@ DATABASES = {
 ## we extend INSTALLED_APPS here.
 ## Any apps you want to install you can
 ## just add here (or use app.py)
-#settings.INSTALLED_APPS.extend([
-#    'rest_framework',
-#    'user',
-#])
+settings.INSTALLED_APPS.extend([
+    'rest_framework',
+    'user',
+])
 
 ## Rest framework settings
-#REST_FRAMEWORK = {
-#    # Use Django's standard `django.contrib.auth` permissions,
-#    # or allow read-only access for unauthenticated users.
-#    'DEFAULT_PERMISSION_CLASSES': [
-#        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-#    ]
-#}
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
 
 ## We set the static root to the mapped volume /code
 ## When you run docker-compose run web python manage.py collectstatic
