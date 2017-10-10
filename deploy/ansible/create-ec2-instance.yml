@@ -2,29 +2,95 @@
 - name: create AWS EC2 instance for deployment        
   hosts: localhost
   connection: local
-  gather_facts: False
+  user: test
+  gather_facts: false
 
   tasks:
-
+  
+    # Create AWS security group to control access to new instance
+    - name: create security group
+      ec2_group:
+        name: website_access_group
+        description: access to the website servers
+        region: us-east-2
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+            
+    # Create new AWS EC2 instance      
     - name: create EC2 instance
       ec2:
-         key_name: website_access
-         group: webserver_access_group
-         instance_type: t2.micro
-         image: ami-10547475
-         wait: true
-         count: 1
-         region: us-east-2b
-         #vpc_subnet_id: subnet-29e63245
-         #assign_public_ip: yes 
+        key_name: website_access
+        group: webserver_access_group
+        instance_type: t2.micro
+        image: ami-10547475
+        wait: true
+        count: 1
+        region: us-east-2
+        aws_access_key: AKIAIBA3VSTXATGJOH7Q
+        aws_secret_key: 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
       register: ec2
       
-    - name: Add all instance public IPs to host group
+    # Add newly-created instance to hosts group
+    - name: add public IP from new instance to hosts group
       add_host: hostname={{ item.public_ip }} groups=ec2hosts
       with_items: "{{ ec2.instances }}"
       
-#    - name: configuration play
-#      hosts: ec2hosts
-#      user: ubuntu
-#      
-#      tasks:        
+#    - name: add authorized key
+#      authorized_key:
+#        user: test
+#        state: present
+#        key: "{{ lookup('file', '/home/test/Downloads/website_access.pem') }}"
+
+    # Mitigate prompt asking to accept server's fingerprint
+    - name: accept new ssh fingerprints                                         
+      shell: ssh-keyscan -H {{ item.public_ip }} >> /home/test/.ssh/known_hosts          
+      with_items: '{{ ec2.instances }}'
+      
+    # Wait for SSH on remote host to become present
+    - name: wait for SSH to come up
+      wait_for:
+        host: "{{ item.public_dns_name }}"
+        port: 22
+        delay: 60
+        timeout: 320
+        state: started
+      with_items: "{{ ec2.instances }}"
+      
+# Test newly-created instance      
+- name: test hosts group
+  hosts: ec2hosts
+  user: ubuntu
+  gather_facts: true
+  ignore_errors: true
+  tasks:
+     # execute pwd shell command to test connection
+     - name: print working directory
+       shell: pwd 
+       ignore_errors: true    
+
+# Terminate instances
+- name: terminate instances
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    # terminate all instances in hosts group
+    - name: terminate instances in hosts group
+      ec2:
+        state: 'absent'
+        instance_ids: '{{ ec2.instance_ids }}'
+        region: us-east-2
+        
+# Invoke host setup play 
+#- name: invoke deploy play
+#  hosts: ec2hosts
+#  user: ubuntu
+#  tasks:
+#    - include: deploy-website.yml
