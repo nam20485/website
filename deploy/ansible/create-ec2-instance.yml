@@ -4,8 +4,25 @@
   connection: local
   user: test
   gather_facts: false
+  
+  vars:
+    aws_access_key: AKIAIJPSB4VJLJMS3SHQ
+    aws_secret_key: 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
 
   tasks:
+    # Create EC2 key
+    - name: create EC2 key
+      ec2_key:
+        name: "website_access_key"
+        region: us-east-2
+        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
+        aws_secret_key: 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
+      register: ec2_key
+
+    # Save EC2 key locally
+    - name: save private key
+      copy: content="{{ ec2_key.key.private_key }}" dest="../aws-private.pem" mode=0600
+      when: ec2_key.changed
   
     # Create AWS security group to control access to new instance
     - name: create security group
@@ -13,8 +30,8 @@
         name: website_access_group
         description: access to the website servers
         region: us-east-2
-        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
-        aws_secret_key: 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
+        aws_access_key: "{{aws_access_key}}"
+        aws_secret_key: "{{aws_secret_key}}"
         rules:
           - proto: tcp
             from_port: 22
@@ -41,8 +58,16 @@
       
     # Add newly-created instance to hosts group
     - name: add public IP from new instance to hosts group
-      add_host: hostname={{ item.public_ip }} groups=ec2hosts
+      add_host: hostname={{ item.public_ip }} groups=ec2hosts ansible_ssh_user=ubuntu ansible_ssh_private_key_file=../aws-private.pem
       with_items: "{{ ec2.instances }}"
+      
+  #    - name: Add the newly created EC2 instance(s) to host group
+  #lineinfile: dest={{ hostpath }}
+  #            regexp={{ item.public_ip }} 
+  #            insertafter="[webserver]" 
+  #            line="{{ item.public_ip }} {{hoststring}}"
+  #            state=present
+  #with_items: ec2.instances
       
 #    - name: add authorized key
 #      authorized_key:
@@ -84,7 +109,7 @@
      # Execute pwd shell command to test connection
      - name: print working directory
        shell: pwd 
-       ignore_errors: true  
+       ignore_errors: true    
 
 # Terminate instances
 - name: terminate instances
