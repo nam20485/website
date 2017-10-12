@@ -4,19 +4,15 @@
   connection: local
   user: test
   gather_facts: false
-  
-  vars:
-    aws_access_key: AKIAIJPSB4VJLJMS3SHQ
-    aws_secret_key: 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
 
   tasks:
     # Create EC2 key
     - name: create EC2 key
       ec2_key:
-        name: "website_access_key"
+        name: website_access_key
         region: us-east-2
-        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
-        aws_secret_key: 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
+        aws_access_key: "{{aws_access_key}}"
+        aws_secret_key: "{{aws_secret_key}}"
       register: ec2_key
 
     # Save EC2 key locally
@@ -37,10 +33,10 @@
             from_port: 22
             to_port: 22
             cidr_ip: 0.0.0.0/0
-          - proto: tcp
-            from_port: 80
-            to_port: 80
-            cidr_ip: 0.0.0.0/0
+        #  - proto: tcp
+        #    from_port: 80
+        #    to_port: 80
+        #    cidr_ip: 0.0.0.0/0
             
     # Create new AWS EC2 instance      
     - name: create EC2 instance
@@ -52,8 +48,8 @@
         wait: true
         count: 1
         region: us-east-2
-        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
-        aws_secret_key: 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
+        aws_access_key: "{{aws_access_key}}"
+        aws_secret_key: "{{aws_secret_key}}"
       register: ec2
       
     # Add newly-created instance to hosts group
@@ -96,8 +92,9 @@
 #  user: ubuntu
 #  gather_facts: true
 #  tasks:
-#    - name: include deploy-website.yml
-#      include: deploy-website.yml
+#    - name: import deploy-website.yml
+#      #import_playbook: deploy-website.yml
+#      include_playbook: deploy-website.yml
       
 # Test newly-created instance      
 - name: test hosts group
@@ -125,5 +122,5 @@
         wait: true
         instance_ids: '{{ ec2.instance_ids }}'
         region: us-east-2
-        aws_access_key: AKIAIJPSB4VJLJMS3SHQ
-        aws_secret_key: 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
+        aws_access_key: "{{aws_access_key}}"
+        aws_secret_key: "{{aws_secret_key}}"
