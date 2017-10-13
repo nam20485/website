@@ -72,9 +72,18 @@
       with_items: "{{ ec2.instances }}"
       
     # Mitigate prompt asking to accept server's fingerprint
-    - name: add authorized key 
-      shell: ssh-add ./webserver_access.pem  
-      with_items: '{{ ec2.instances }}'
+    #- name: add authorized key 
+    #  shell: ssh-add ./webserver_access.pem  
+    #  with_items: '{{ ec2.instances }}'
+      
+    - name: unpack public key
+      shell: ssh-keygen -y -f ./webserver_access.pem >> ./webserver_access.pem.pub
+      
+    - name: Set authorized key
+      authorized_key:
+        user: test
+        state: present
+        key: "{{ lookup('file', './webserver_access.pem.pub') }}"
       
     # Mitigate prompt asking to accept server's fingerprint
     # - name: add    
